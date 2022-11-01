@@ -1,0 +1,57 @@
+version: "3.9"
+
+networks:
+  backend:
+    driver: bridge
+    name: consume-fcm_backend
+
+volumes:
+  postgres:
+    driver: local
+
+services:
+  ### MySQL ####################
+  db:
+    image: mysql:8
+    container_name: consume-fcm_db
+    environment:
+      - MYSQL_DATABASE=${DB_DATABASE}
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${DB_ROOT_PASSWORD}
+    ports:
+      - "13306:${DB_PORT}"
+    restart: always
+    networks:
+      - backend
+
+  ### MySQL ####################
+  queue:
+    image: rabbitmq:3-management
+    container_name: consume-fcm_queue
+    environment:
+      - RABBITMQ_DEFAULT_USER=${RABBITMQ_USER}
+      - RABBITMQ_DEFAULT_PASS=${RABBITMQ_PASSWORD}
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+    restart: always
+    networks:
+      - backend
+
+  ### golang ####################
+  server:
+    image: golang:1.19-alpine
+    working_dir: /server
+    container_name: consume-fcm_server
+    volumes:
+      - .:/server
+    ports:
+      - "18080:8080"
+    depends_on:
+      - db
+      - queue
+    entrypoint: go run cmd/server/main.go
+    restart: always
+    networks:
+      - backend
