@@ -24,6 +24,10 @@ services:
     restart: always
     networks:
       - backend
+    healthcheck:
+      test: [ "CMD", "mysqladmin" ,"ping", "-h", "localhost" ]
+      timeout: 10s
+      retries: 10
 
   ### MySQL ####################
   queue:
@@ -38,6 +42,11 @@ services:
     restart: always
     networks:
       - backend
+    healthcheck:
+      test: rabbitmq-diagnostics -q ping
+      interval: 10s
+      timeout: 30s
+      retries: 3
 
   ### golang ####################
   server:
@@ -49,8 +58,10 @@ services:
     ports:
       - "18080:8080"
     depends_on:
-      - db
-      - queue
+      db:
+        condition: service_healthy
+      queue:
+        condition: service_healthy
     entrypoint: go run cmd/server/main.go
     restart: always
     networks:
