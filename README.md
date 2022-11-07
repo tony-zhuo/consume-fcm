@@ -17,3 +17,32 @@ make migrate
 
 ## RabbitMQ
 when server is running, you can open the url `http://localhost:15672/` in browser.
+
+## Architecture
+```
+.
+└── consume-fcm/
+    ├── cmd/
+    │   └── server/
+    │       └── main.go
+    ├── internal/
+    │   ├── controllers/
+    │   │   └── queue.go
+    │   ├── models/
+    │   │   └── fcm_job.go
+    │   ├── pkg/
+    │   │   ├── database.go
+    │   │   ├── firebase.go
+    │   │   └── message_queue.go
+    │   ├── repositories/
+    │   │   └── fcm_job.go
+    │   ├── services/
+    │   │   └── queue.go
+    │   └── workers/
+    │       └── queue
+    └── migrations/
+        └── ...
+```
+
+## flow chart
+![plot](./docs/flow-chart.png)
